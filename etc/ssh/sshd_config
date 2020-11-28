@@ -1,0 +1,38 @@
+#
+Port 22
+Protocol 2
+
+SyslogFacility AUTH
+LogLevel INFO
+
+PermitRootLogin without-password
+# PermitRootLogin no
+AllowUsers vscode
+
+IgnoreRhosts yes
+IgnoreUserKnownHosts yes
+HostbasedAuthentication no
+
+AuthenticationMethods publickey
+PasswordAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+GSSAPIAuthentication no
+StrictModes no
+
+UsePAM yes
+
+AllowTcpForwarding no
+X11Forwarding no
+UseDNS no
+PrintMotd no
+Banner none
+
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+PermitUserEnvironment yes
+
+ClientAliveInterval 30
+ClientAliveCountMax 10
+
+Ciphers aes128-ctr,aes192-ctr,aes256-ctr
