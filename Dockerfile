@@ -16,7 +16,7 @@ RUN LC_ALL=C apt-get update -y && LC_ALL=C apt-get install -y locales && \
 
 RUN apt-get update -y && \
     apt-get install -y ansible ansible-lint yamllint && \
-    apt-get install -y docker.ce && \
+    apt-get install -y docker.io && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -36,7 +36,13 @@ FROM base AS kube
 RUN wget https://dl.k8s.io/v1.19.4/kubernetes-client-linux-amd64.tar.gz -O /tmp/kubernetes-client-linux-amd64.tar.gz && \
     cd /tmp && tar -xzf /tmp/kubernetes-client-linux-amd64.tar.gz && mv kubernetes/client/bin/kubectl /usr/bin/kubectl && \
     wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz -O /tmp/helm.tar.gz && \
-    cd /tmp && tar -xzf /tmp/helm.tar.gz && mv linux-amd64/helm /usr/bin/helm && rm -rf /tmp/*
+    cd /tmp && tar -xzf /tmp/helm.tar.gz && mv linux-amd64/helm /usr/bin/helm && rm -rf /tmp/* && \
+    curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
+    echo "deb [arch=amd64] https://apt.releases.hashicorp.com groovy main" > /etc/apt/sources.list.d/hashicorp.list && \
+    apt-get update && apt-get install terraform && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 #############################
 #

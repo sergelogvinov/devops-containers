@@ -16,12 +16,16 @@ help:
 
 
 build: ## Build base images
-	docker build $(BUILDARG) --rm -t local/devops-containers:base-$(CODE_TAG) \
+	docker build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:base-$(CODE_TAG) \
 		-f Dockerfile --target=base .
-	docker build $(BUILDARG) --rm -t local/devops-containers:kube-$(CODE_TAG) \
+	docker build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:kube-$(CODE_TAG) \
 		-f Dockerfile --target=kube .
 
 
 build-dev: ## Build develop environment
-	docker build $(BUILDARG) --rm -t local/devops-containers:dev-$(CODE_TAG) \
+	docker build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:dev-$(CODE_TAG) \
 		-f Dockerfile --target=dev .
+
+push:
+	docker push $(REGISTRY)/devops-containers:kube-$(CODE_TAG)
+	docker push $(REGISTRY)/devops-containers:dev-$(CODE_TAG)

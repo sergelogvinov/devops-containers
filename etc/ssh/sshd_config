@@ -22,7 +22,7 @@ StrictModes no
 
 UsePAM yes
 
-AllowTcpForwarding no
+AllowTcpForwarding yes
 X11Forwarding no
 UseDNS no
 PrintMotd no
