@@ -1,0 +1,15 @@
+{{- if .Values.serviceAccount.roleBindingRef }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: {{ .Values.serviceAccount.roleBindingKind }}
+metadata:
+  name: {{ include "vscode-remote.fullname" . }}
+  labels:
+    {{- include "vscode-remote.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  {{- toYaml .Values.serviceAccount.roleBindingRef | nindent 2 }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "vscode-remote.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

@@ -22,6 +22,12 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+  roleBindingKind: RoleBinding
+  # kind: ClusterRoleBinding
+  roleBindingRef: {}
+    # apiGroup: rbac.authorization.k8s.io
+    # kind: ClusterRole
+    # name: admin
 
 podAnnotations: {}
 
@@ -37,6 +43,26 @@ sshConfig: {}
   # config: |
   #   Host *
   #     StrictHostKeyChecking no
+
+kubeConfig: |
+  apiVersion: v1
+  kind: Config
+  clusters:
+  - cluster:
+      certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      server: https://kubernetes.default.svc
+    name: external
+  contexts:
+  - context:
+      cluster: external
+      namespace: default
+      user: sa
+    name: default
+  current-context: default
+  users:
+  - name: sa
+    user:
+      tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
 
 securityContext:
   runAsUser: 0
