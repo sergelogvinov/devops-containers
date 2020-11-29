@@ -5,12 +5,14 @@ ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=en_US.UTF-8
 RUN LC_ALL=C apt-get update -y && LC_ALL=C apt-get install -y locales && \
     LC_ALL=C locale-gen --no-purge en_US.UTF-8 && \
     apt-get update -y && \
+    apt-get install -y zsh zsh-autosuggestions && \
     apt-get install -y openssh-server sudo vim curl wget && \
     apt-get install -y git make zip jq && \
     apt-get install -y golang && \
     apt-get install -y python3 python3-pip python3-boto python3-jmespath && \
     apt-get autoremove -y && \
     apt-get clean && \
+    git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git /oh-my-zsh && \
     mkdir -p /var/run/sshd && \
     rm -rf /var/lib/apt/lists/*
 
@@ -21,12 +23,13 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN adduser --disabled-password --home /home/vscode --shell=/bin/bash --uid 1100 --gecos "VS Code" vscode && \
+COPY ["etc/","/etc/"]
+
+RUN adduser --disabled-password --home /home/vscode --shell=/usr/bin/zsh --uid 1100 --gecos "VS Code" vscode && \
     echo "vscode ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     usermod -aG sudo vscode && \
     install -m 0750 -o vscode -g vscode -d /home/vscode/.ssh /home/vscode/.ansible /home/vscode/.docker /www
 
-COPY ["etc/","/etc/"]
 WORKDIR /www
 
 #############################
