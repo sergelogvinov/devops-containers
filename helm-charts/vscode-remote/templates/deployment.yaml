@@ -54,6 +54,9 @@ spec:
             - name: ssh
               containerPort: 22
               protocol: TCP
+          {{- if .Values.service.sshHostPort }}
+              hostPort: {{ .Values.service.sshHostPort }}
+          {{- end }}
           {{- if .Values.service.port }}
             - name: service
               containerPort: {{ .Values.service.port }}
