@@ -1,0 +1,79 @@
+---
+
+image:
+  repository: docker.pkg.github.com/sergelogvinov/devops-containers/devops-containers
+
+imagePullSecrets:
+  - name: github-registry
+
+serviceAccount:
+  roleBindingKind: ClusterRoleBinding
+  roleBindingRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: admin
+
+envs:
+  DOCKER_BUILDKIT: "1"
+  DOCKER_TLS_VERIFY: "1"
+  DOCKER_HOST: tcp://docker-server:2376
+  KUBECONFIG: /home/vscode/.kubeconfig/kubeconfig
+
+sshConfig:
+  authorized_keys: |
+    ssh-rsa AAA
+  # config: ""
+
+kubeConfig: |
+  apiVersion: v1
+  kind: Config
+  clusters:
+  - cluster:
+      certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      server: https://kubernetes.default.svc
+    name: external
+  contexts:
+  - context:
+      cluster: external
+      namespace: default
+      user: sa
+    name: default
+  current-context: default
+  users:
+  - name: sa
+    user:
+      tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+extraVolumeMounts:
+  - name: tlscerts
+    mountPath: /home/vscode/.docker
+
+extraVolumes:
+  - name: tlscerts
+    secret:
+      secretName: docker-server
+      defaultMode: 256
+      items:
+        - key: ca.crt
+          path: ca.pem
+        - key: tls.crt
+          path: cert.pem
+        - key: tls.key
+          path: key.pem
+
+service:
+  sshHostPort: 8022
+
+networkPolicy:
+  enabled: true
+  from:
+    - ipBlock:
+        cidr: 8.8.8.8/24
+
+persistence:
+  enabled: true
+  storageClass: "local-path"
+  size: 1Gi
+
+# nodeSelector:
+#   kubernetes.io/role: worker
