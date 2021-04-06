@@ -4,6 +4,10 @@
 
 replicaCount: 1
 
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
 image:
   repository: docker.pkg.github.com/sergelogvinov/devops-containers/devops-containers
   pullPolicy: IfNotPresent
@@ -11,10 +15,7 @@ image:
   tag: ""
 
 sidecarContainers: {}
-
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+hostAliases: {}
 
 serviceAccount:
   # Specifies whether a service account should be created

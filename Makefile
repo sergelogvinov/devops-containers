@@ -21,11 +21,13 @@ build: ## Build base images
 	docker build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:kube-$(CODE_TAG) \
 		-f Dockerfile --target=kube .
 
-
 build-dev: ## Build develop environment
 	docker build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:dev-$(CODE_TAG) \
 		-f Dockerfile --target=dev .
+	docker build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:pytest-$(CODE_TAG) \
+		-f Dockerfile --target=pytest .
 
 push:
 	docker push $(REGISTRY)/devops-containers:kube-$(CODE_TAG)
 	docker push $(REGISTRY)/devops-containers:dev-$(CODE_TAG)
+	docker push $(REGISTRY)/devops-containers:pytest-$(CODE_TAG)

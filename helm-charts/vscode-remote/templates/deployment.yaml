@@ -6,6 +6,8 @@ metadata:
     {{- include "vscode-remote.labels" . | nindent 4 }}
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "vscode-remote.selectorLabels" . | nindent 6 }}
@@ -23,6 +25,10 @@ spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml .Values.hostAliases | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "vscode-remote.serviceAccountName" . }}
       securityContext:
