@@ -36,9 +36,9 @@ WORKDIR /www
 #
 FROM base AS kube
 
-RUN wget https://dl.k8s.io/v1.19.4/kubernetes-client-linux-amd64.tar.gz -O /tmp/kubernetes-client-linux-amd64.tar.gz && \
+RUN wget https://dl.k8s.io/v1.20.1/kubernetes-client-linux-amd64.tar.gz -O /tmp/kubernetes-client-linux-amd64.tar.gz && \
     cd /tmp && tar -xzf /tmp/kubernetes-client-linux-amd64.tar.gz && mv kubernetes/client/bin/kubectl /usr/bin/kubectl && \
-    wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz -O /tmp/helm.tar.gz && \
+    wget https://get.helm.sh/helm-v3.4.2-linux-amd64.tar.gz -O /tmp/helm.tar.gz && \
     cd /tmp && tar -xzf /tmp/helm.tar.gz && mv linux-amd64/helm /usr/bin/helm && rm -rf /tmp/* && \
     curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     echo "deb [arch=amd64] https://apt.releases.hashicorp.com groovy main" > /etc/apt/sources.list.d/hashicorp.list && \
@@ -62,7 +62,13 @@ RUN apt-get update -y && \
 RUN wget https://openresty.org/download/openresty-1.19.3.1.tar.gz -O openresty-1.19.3.1.tar.gz && \
     tar xzf openresty-1.19.3.1.tar.gz && \
     cd openresty-1.19.3.1 && ./configure -j2 --with-http_realip_module --with-pcre-jit --with-ipv6 --conf-path=/etc/nginx/nginx.conf && \
-    make -j2 && make install && cd .. && \
-    rm -rf openresty-1.19.3.1 openresty-1.19.3.1.tar.gz
+    make -j2 && make install && cd .. && ln -s /usr/local/openresty/bin/openresty /usr/sbin/nginx && \
+    rm -rf openresty-1.19.3.1 openresty-1.19.3.1.tar.gz && \
+    install -m 0775 -g vscode -d /usr/local/openresty/nginx/client_body_temp /usr/local/openresty/nginx/proxy_temp && \
+    install -m 0775 -g vscode -d /usr/local/openresty/nginx/fastcgi_temp /usr/local/openresty/nginx/uwsgi_temp && \
+    install -m 0775 -g vscode -d /usr/local/openresty/nginx/scgi_temp /usr/local/openresty/nginx/logs && \
+    cpan -y Test::Nginx
+
+ENV TEST_NGINX_BINARY=/usr/sbin/nginx
 
 USER vscode

@@ -3,6 +3,24 @@
 image:
   repository: docker.pkg.github.com/sergelogvinov/devops-containers/devops-containers
 
+sidecarContainers:
+  selenium:
+    image: selenium/standalone-chrome-debug:3.141.59-20200409
+    env:
+      - name: SCREEN_WIDTH
+        value: "1366"
+      - name: SCREEN_HEIGHT
+        value: "768"
+      - name: SCREEN_DEPTH
+        value: "24"
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+
 imagePullSecrets:
   - name: github-registry
 
