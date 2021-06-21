@@ -1,5 +1,5 @@
 #
-FROM ubuntu:groovy AS base
+FROM ubuntu:hirsute AS base
 
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=en_US.UTF-8
 RUN LC_ALL=C apt-get update -y && LC_ALL=C apt-get install -y locales && \
@@ -68,8 +68,9 @@ RUN wget https://openresty.org/download/openresty-1.19.3.1.tar.gz -O openresty-1
     rm -rf openresty-1.19.3.1 openresty-1.19.3.1.tar.gz && \
     install -m 0775 -g vscode -d /usr/local/openresty/nginx/client_body_temp /usr/local/openresty/nginx/proxy_temp && \
     install -m 0775 -g vscode -d /usr/local/openresty/nginx/fastcgi_temp /usr/local/openresty/nginx/uwsgi_temp && \
-    install -m 0775 -g vscode -d /usr/local/openresty/nginx/scgi_temp /usr/local/openresty/nginx/logs && \
-    cpan -y Test::Nginx
+    install -m 0775 -g vscode -d /usr/local/openresty/nginx/scgi_temp /usr/local/openresty/nginx/logs
+
+RUN cpan Test::Nginx
 
 ENV TEST_NGINX_BINARY=/usr/sbin/nginx
 
