@@ -1,14 +1,16 @@
 #
-FROM ubuntu:hirsute AS base
+# FROM debian:bullseye AS base
+FROM golang:1.17-bullseye AS base
+LABEL org.opencontainers.image.source https://github.com/sergelogvinov/devops-containers
 
-ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=en_US.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=C.UTF-8
 RUN LC_ALL=C apt-get update -y && LC_ALL=C apt-get install -y locales && \
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
     LC_ALL=C locale-gen --no-purge en_US.UTF-8 && \
     apt-get update -y && \
     apt-get install -y zsh zsh-autosuggestions && \
     apt-get install -y sudo vim curl wget && \
     apt-get install -y git make zip jq && \
-    apt-get install -y golang && \
     apt-get install -y python3 python3-pip python3-boto python3-jmespath && \
     apt-get autoremove -y && \
     apt-get clean && \
@@ -38,9 +40,9 @@ WORKDIR /www
 #
 FROM base AS kube
 
-RUN wget https://dl.k8s.io/v1.20.1/kubernetes-client-linux-amd64.tar.gz -O /tmp/kubernetes-client-linux-amd64.tar.gz && \
+RUN wget https://dl.k8s.io/v1.22.2/kubernetes-client-linux-amd64.tar.gz -O /tmp/kubernetes-client-linux-amd64.tar.gz && \
     cd /tmp && tar -xzf /tmp/kubernetes-client-linux-amd64.tar.gz && mv kubernetes/client/bin/kubectl /usr/bin/kubectl && \
-    wget https://get.helm.sh/helm-v3.4.2-linux-amd64.tar.gz -O /tmp/helm.tar.gz && \
+    wget https://get.helm.sh/helm-v3.6.3-linux-amd64.tar.gz -O /tmp/helm.tar.gz && \
     cd /tmp && tar -xzf /tmp/helm.tar.gz && mv linux-amd64/helm /usr/bin/helm && rm -rf /tmp/* && \
     curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     echo "deb [arch=amd64] https://apt.releases.hashicorp.com groovy main" > /etc/apt/sources.list.d/hashicorp.list && \
