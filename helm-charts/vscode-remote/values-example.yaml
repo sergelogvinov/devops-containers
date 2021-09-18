@@ -1,7 +1,7 @@
 ---
 
 image:
-  repository: docker.pkg.github.com/sergelogvinov/devops-containers/devops-containers
+  repository: ghcr.io/sergelogvinov/devops-containers/devops-containers
 
 sidecarContainers:
   selenium:
@@ -20,9 +20,6 @@ sidecarContainers:
       requests:
         cpu: 500m
         memory: 512Mi
-
-imagePullSecrets:
-  - name: github-registry
 
 serviceAccount:
   roleBindingKind: ClusterRoleBinding

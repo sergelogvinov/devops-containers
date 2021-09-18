@@ -9,7 +9,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
-  repository: docker.pkg.github.com/sergelogvinov/devops-containers/devops-containers
+  repository: ghcr.io/sergelogvinov/devops-containers/devops-containers
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
