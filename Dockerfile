@@ -26,6 +26,7 @@ RUN apt-get update -y && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+COPY --from=docker/buildx-bin:0.6.3 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 COPY ["etc/","/etc/"]
 
