@@ -65,7 +65,7 @@ Create the name of the service account to use
 Create the profile file to sev envs
 */}}
 {{- define "vscode-remote.profileScript" -}}
-eval $(/usr/bin/locale-check C.UTF-8)
+# eval $(/usr/bin/locale-check C.UTF-8)
 export KUBECONFIG=/home/vscode/.kubeconfig/kubeconfig
 {{- range $name, $value := .Values.envs }}
 export {{ $name }}={{ $value }}
