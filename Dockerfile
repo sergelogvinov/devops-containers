@@ -4,7 +4,7 @@ FROM golang:1.17-bullseye AS base
 LABEL org.opencontainers.image.source https://github.com/sergelogvinov/devops-containers
 
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=C.UTF-8
-RUN LC_ALL=C apt-get update -y && LC_ALL=C apt-get install -y locales && \
+RUN LC_ALL=C apt-get update -y && LC_ALL=C apt-get install -y locales less && \
     echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
     LC_ALL=C locale-gen --no-purge en_US.UTF-8 && \
     apt-get update -y && \
