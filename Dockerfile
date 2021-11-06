@@ -78,6 +78,7 @@ RUN cpan Test::Nginx
 ENV TEST_NGINX_BINARY=/usr/sbin/nginx
 
 USER vscode
+RUN git config pull.rebase false
 
 #############################
 #
