@@ -52,6 +52,9 @@ RUN wget https://dl.k8s.io/v1.22.2/kubernetes-client-linux-amd64.tar.gz -O /tmp/
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+COPY --from=ghcr.io/aquasecurity/trivy:0.20.2 /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=wagoodman/dive:v0.10.0            /usr/local/bin/dive  /usr/local/bin/dive
+
 #############################
 #
 FROM kube AS dev
@@ -78,6 +81,7 @@ RUN cpan Test::Nginx
 ENV TEST_NGINX_BINARY=/usr/sbin/nginx
 
 USER vscode
+RUN git config --global pull.rebase false
 
 #############################
 #
@@ -103,3 +107,4 @@ RUN apt-get update -y && apt-get install -y python3 python3-venv python3-dev pyt
     rm -rf /var/lib/apt/lists/*
 
 USER vscode
+RUN git config --global pull.rebase false
