@@ -1,6 +1,6 @@
 #
 # FROM debian:bullseye AS base
-FROM golang:1.17-bullseye AS base
+FROM golang:1.19-bullseye AS base
 LABEL org.opencontainers.image.source https://github.com/sergelogvinov/devops-containers
 
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=C.UTF-8
@@ -41,18 +41,16 @@ WORKDIR /www
 #
 FROM base AS kube
 
-RUN wget https://dl.k8s.io/v1.22.2/kubernetes-client-linux-amd64.tar.gz -O /tmp/kubernetes-client-linux-amd64.tar.gz && \
+RUN wget https://dl.k8s.io/v1.22.15/kubernetes-client-linux-amd64.tar.gz -O /tmp/kubernetes-client-linux-amd64.tar.gz && \
     cd /tmp && tar -xzf /tmp/kubernetes-client-linux-amd64.tar.gz && mv kubernetes/client/bin/kubectl /usr/bin/kubectl && \
-    wget https://get.helm.sh/helm-v3.6.3-linux-amd64.tar.gz -O /tmp/helm.tar.gz && \
+    wget https://get.helm.sh/helm-v3.10.0-linux-amd64.tar.gz -O /tmp/helm.tar.gz && \
     cd /tmp && tar -xzf /tmp/helm.tar.gz && mv linux-amd64/helm /usr/bin/helm && rm -rf /tmp/* && \
-    curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
-    echo "deb [arch=amd64] https://apt.releases.hashicorp.com groovy main" > /etc/apt/sources.list.d/hashicorp.list && \
-    apt-get update && apt-get install terraform && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/aquasecurity/trivy:0.20.2 /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=hashicorp/terraform:1.3.1         /bin/terraform       /bin/terraform
+COPY --from=ghcr.io/aquasecurity/trivy:0.32.1 /usr/local/bin/trivy /usr/local/bin/trivy
 COPY --from=wagoodman/dive:v0.10.0            /usr/local/bin/dive  /usr/local/bin/dive
 
 #############################
