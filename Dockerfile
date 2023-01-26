@@ -26,7 +26,7 @@ RUN apt-get update -y && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-COPY --from=docker/buildx-bin:0.6.3 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
+COPY --from=docker/buildx-bin:0.10.0 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 COPY ["etc/","/etc/"]
 
@@ -49,8 +49,8 @@ RUN wget https://dl.k8s.io/v1.22.15/kubernetes-client-linux-amd64.tar.gz -O /tmp
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=hashicorp/terraform:1.3.1         /bin/terraform       /bin/terraform
-COPY --from=ghcr.io/aquasecurity/trivy:0.32.1 /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=hashicorp/terraform:1.3.7         /bin/terraform       /bin/terraform
+COPY --from=ghcr.io/aquasecurity/trivy:0.36.1 /usr/local/bin/trivy /usr/local/bin/trivy
 COPY --from=wagoodman/dive:v0.10.0            /usr/local/bin/dive  /usr/local/bin/dive
 
 #############################
