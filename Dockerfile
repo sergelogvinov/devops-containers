@@ -1,6 +1,6 @@
 #
 # FROM debian:bullseye AS base
-FROM golang:1.19-bullseye AS base
+FROM golang:1.20-bullseye AS base
 LABEL org.opencontainers.image.source https://github.com/sergelogvinov/devops-containers
 
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=C.UTF-8
