@@ -96,6 +96,31 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+docker:
+  enabled: false
+  image:
+    repository: docker
+    pullPolicy: IfNotPresent
+    tag: 23.0-dind
+
+  resources:
+    limits:
+      cpu: 3
+      memory: 8Gi
+    requests:
+      cpu: 1
+      memory: 512Mi
+
+  persistence:
+    enabled: false
+    ephemeral: false
+
+    # storageClass: "-"
+    accessModes:
+      - ReadWriteOnce
+    size: 100Gi
+    annotations: {}
+
 nodeSelector: {}
 
 tolerations: []

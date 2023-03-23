@@ -74,6 +74,10 @@ spec:
           {{- end }}
             - name: profile
               mountPath: /etc/profile.d
+          {{- if .Values.docker.enabled }}
+            - name: docker-states
+              mountPath: /home/vscode/.docker
+          {{- end }}
             - name: workdir
               mountPath: /www
             - name: kubeconfig
@@ -83,6 +87,29 @@ spec:
               readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+        {{- if .Values.docker.enabled }}
+        - name: {{ .Chart.Name }}-docker
+          minReadySeconds: 5
+          securityContext:
+            privileged: true
+            seccompProfile:
+              type: Unconfined
+          image: "{{ .Values.docker.image.repository }}:{{ .Values.docker.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.docker.image.pullPolicy }}
+          command: ["dockerd"]
+          args:
+            - --config-file=/etc/docker-config/daemon.json
+          volumeMounts:
+            - name: config
+              mountPath: /etc/docker-config
+            - name: docker-workdir
+              mountPath: /var/lib/docker
+            - name: modules
+              mountPath: /lib/modules
+              readOnly: true
+          resources:
+            {{- toYaml .Values.docker.resources | nindent 12 }}
+        {{- end }}
       {{- if .Values.sidecarContainers }}
         {{- range $name, $spec :=  .Values.sidecarContainers }}
         - name: {{ $name }}
@@ -105,18 +132,18 @@ spec:
       {{- if .Values.extraVolumes }}
         {{ toYaml .Values.extraVolumes | nindent 8 }}
       {{- end }}
-  {{- if not .Values.persistence.enabled }}
+      {{- if not .Values.persistence.enabled }}
         - name: workdir
           emptyDir: {}
-  {{- else if .Values.persistence.existingClaim }}
+      {{- else if .Values.persistence.existingClaim }}
         - name: workdir
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.existingClaim }}
-  {{- else }}
+      {{- else }}
         - name: workdir
           persistentVolumeClaim:
             claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ include "vscode-remote.fullname" . }}{{- end }}
-  {{- end }}
+      {{- end }}
         - name: profile
           secret:
             secretName: {{ include "vscode-remote.fullname" . }}-envs
@@ -132,3 +159,33 @@ spec:
           secret:
             secretName: {{ include "vscode-remote.fullname" . }}-ssh
             defaultMode: 256
+      {{- if .Values.docker.enabled }}
+        - name: config
+          configMap:
+            name: {{ include "vscode-remote.fullname" . }}
+        - name: docker-states
+          emptyDir:
+            medium: Memory
+            sizeLimit: "1Mi"
+        - name: modules
+          hostPath:
+            path: /lib/modules
+        {{- if not (or .Values.docker.persistence.enabled .Values.docker.persistence.ephemeral) }}
+        - name: docker-workdir
+          emptyDir: {}
+        {{- else if .Values.docker.persistence.ephemeral }}
+        - name: docker-workdir
+          ephemeral:
+            volumeClaimTemplate:
+              metadata:
+                labels:
+                  {{- include "vscode-remote.selectorLabels" . | nindent 18 }}
+                {{- with .Values.docker.persistence.annotations }}
+                annotations:
+                {{- range $key, $value := . }}
+                  {{ $key }}: {{ $value }}
+                {{- end }}
+                {{- end }}
+              {{- include "volumeClaimTemplate.spec.render" .Values.docker.persistence | nindent 14 }}
+        {{- end }}
+      {{- end }}

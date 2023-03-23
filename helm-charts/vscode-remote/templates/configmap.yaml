@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "vscode-remote.fullname" . }}
+  labels:
+    {{- include "vscode-remote.labels" . | nindent 4 }}
+data:
+  daemon.json: |-
+    {
+      "features": {
+        "buildkit" : true
+      },
+      "builder": {
+        "gc": {
+          "defaultKeepStorage": "32GB",
+          "enabled": true
+        }
+      },
+      "hosts": ["unix:///var/run/docker.sock","tcp://127.0.0.1:2376"],
+      "mtu": 1300,
+      "log-level": "warn"
+    }
