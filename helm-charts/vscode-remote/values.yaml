@@ -121,6 +121,9 @@ docker:
     size: 100Gi
     annotations: {}
 
+  extraVolumeMounts: []
+  extraVolumes: []
+
 nodeSelector: {}
 
 tolerations: []

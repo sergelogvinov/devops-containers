@@ -107,6 +107,9 @@ spec:
             - name: modules
               mountPath: /lib/modules
               readOnly: true
+          {{- if .Values.docker.extraVolumeMounts }}
+            {{ toYaml .Values.docker.extraVolumeMounts | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.docker.resources | nindent 12 }}
         {{- end }}
@@ -187,5 +190,8 @@ spec:
                 {{- end }}
                 {{- end }}
               {{- include "volumeClaimTemplate.spec.render" .Values.docker.persistence | nindent 14 }}
+        {{- end }}
+        {{- if .Values.docker.extraVolumes }}
+          {{- toYaml .Values.docker.extraVolumes | nindent 8 }}
         {{- end }}
       {{- end }}
