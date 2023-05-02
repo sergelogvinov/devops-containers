@@ -1,6 +1,6 @@
 #
 # FROM debian:bullseye AS base
-FROM golang:1.19-bullseye AS base
+FROM golang:1.20-bullseye AS base
 LABEL org.opencontainers.image.source https://github.com/sergelogvinov/devops-containers
 
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=C.UTF-8
@@ -26,8 +26,9 @@ RUN apt-get update -y && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-COPY --from=docker:20.10-cli /usr/libexec/docker/cli-plugins/docker-compose /usr/libexec/docker/cli-plugins/docker-compose
-COPY --from=docker/buildx-bin:0.10.1 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
+
+COPY --from=docker:23.0.5-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
+COPY --from=docker/buildx-bin:0.10.4 /buildx /usr/local/libexec/docker/cli-plugins/docker-buildx
 
 COPY ["etc/","/etc/"]
 
@@ -44,14 +45,14 @@ FROM base AS kube
 
 RUN wget https://dl.k8s.io/v1.22.15/kubernetes-client-linux-amd64.tar.gz -O /tmp/kubernetes-client-linux-amd64.tar.gz && \
     cd /tmp && tar -xzf /tmp/kubernetes-client-linux-amd64.tar.gz && mv kubernetes/client/bin/kubectl /usr/bin/kubectl && \
-    wget https://get.helm.sh/helm-v3.10.0-linux-amd64.tar.gz -O /tmp/helm.tar.gz && \
+    wget https://get.helm.sh/helm-v3.11.1-linux-amd64.tar.gz -O /tmp/helm.tar.gz && \
     cd /tmp && tar -xzf /tmp/helm.tar.gz && mv linux-amd64/helm /usr/bin/helm && rm -rf /tmp/* && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=hashicorp/terraform:1.3.7         /bin/terraform       /bin/terraform
-COPY --from=ghcr.io/aquasecurity/trivy:0.36.1 /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=hashicorp/terraform:1.4.6         /bin/terraform       /bin/terraform
+COPY --from=ghcr.io/aquasecurity/trivy:0.41.0 /usr/local/bin/trivy /usr/local/bin/trivy
 COPY --from=wagoodman/dive:v0.10.0            /usr/local/bin/dive  /usr/local/bin/dive
 
 #############################
