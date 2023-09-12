@@ -1,6 +1,6 @@
 #
 # FROM debian:bullseye AS base
-FROM golang:1.20-bullseye AS base
+FROM golang:1.20.8-bookworm AS base
 LABEL org.opencontainers.image.source https://github.com/sergelogvinov/devops-containers
 
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=C.UTF-8
@@ -27,8 +27,9 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=docker:23.0.5-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
-COPY --from=docker/buildx-bin:0.10.4 /buildx /usr/local/libexec/docker/cli-plugins/docker-buildx
+# https://hub.docker.com/_/docker/tags
+COPY --from=docker:24.0.6-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
+COPY --from=docker/buildx-bin:0.11.2 /buildx /usr/local/libexec/docker/cli-plugins/docker-buildx
 
 COPY ["etc/","/etc/"]
 
@@ -43,22 +44,28 @@ WORKDIR /www
 #
 FROM base AS kube
 
-RUN wget https://dl.k8s.io/v1.22.15/kubernetes-client-linux-amd64.tar.gz -O /tmp/kubernetes-client-linux-amd64.tar.gz && \
-    cd /tmp && tar -xzf /tmp/kubernetes-client-linux-amd64.tar.gz && mv kubernetes/client/bin/kubectl /usr/bin/kubectl && \
-    wget https://get.helm.sh/helm-v3.11.1-linux-amd64.tar.gz -O /tmp/helm.tar.gz && \
-    cd /tmp && tar -xzf /tmp/helm.tar.gz && mv linux-amd64/helm /usr/bin/helm && rm -rf /tmp/* && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+COPY --from=bitnami/kubectl:1.27.5 /opt/bitnami/kubectl/bin/kubectl /usr/local/bin/kubectl
+COPY --from=alpine/helm:3.12.3 /usr/bin/helm /usr/bin/helm
+COPY --from=ghcr.io/sergelogvinov/sops:3.7.3  /usr/bin/sops /usr/bin/sops
+COPY --from=ghcr.io/sergelogvinov/vals:0.25.0 /usr/bin/vals /usr/bin/vals
 
-COPY --from=hashicorp/terraform:1.4.6         /bin/terraform       /bin/terraform
-COPY --from=ghcr.io/aquasecurity/trivy:0.41.0 /usr/local/bin/trivy /usr/local/bin/trivy
-COPY --from=wagoodman/dive:v0.10.0            /usr/local/bin/dive  /usr/local/bin/dive
+COPY --from=hashicorp/terraform:1.5.7         /bin/terraform       /bin/terraform
+COPY --from=wagoodman/dive:v0.11.0            /usr/local/bin/dive  /usr/local/bin/dive
+COPY --from=ghcr.io/sergelogvinov/skopeo:1.13.0 /usr/bin/skopeo /usr/bin/skopeo
+COPY --from=ghcr.io/sergelogvinov/skopeo:1.13.0 /etc/containers/ /etc/containers/
+COPY --from=ghcr.io/aquasecurity/trivy:0.44.1 /usr/local/bin/trivy /usr/local/bin/trivy
+
+ENV HELM_DATA_HOME=/usr/local/share/helm
+RUN helm plugin install https://github.com/jkroepke/helm-secrets --version v3.15.0
+
+USER vscode
+RUN git config --global pull.rebase false
 
 #############################
 #
 FROM kube AS dev
 
+USER root
 RUN apt-get update -y && \
     apt-get install -y  && \
     apt-get install -y libpcre3-dev \
@@ -87,6 +94,7 @@ RUN git config --global pull.rebase false
 #
 FROM kube AS pytest
 
+USER root
 RUN apt-get update -y && \
     apt-get install -y  && \
     apt-get install -y libpcre3-dev \

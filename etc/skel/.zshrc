@@ -1,6 +1,7 @@
 #
 source /etc/profile
 
+export PATH=$PATH:/go/bin:/usr/local/go/bin
 export ZSH=/oh-my-zsh
 export ZSH_CACHE_DIR=$(mktemp -d)
 
