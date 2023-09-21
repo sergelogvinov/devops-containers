@@ -75,6 +75,8 @@ spec:
             - name: profile
               mountPath: /etc/profile.d
           {{- if .Values.docker.enabled }}
+            - name: config
+              mountPath: /etc/docker-config
             - name: docker-states
               mountPath: /home/vscode/.docker
           {{- end }}
