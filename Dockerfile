@@ -1,6 +1,6 @@
 #
 
-FROM golang:1.21.2-bookworm AS base
+FROM golang:1.21.4-bookworm AS base
 LABEL org.opencontainers.image.source https://github.com/sergelogvinov/devops-containers
 
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=C.UTF-8
@@ -11,7 +11,7 @@ RUN LC_ALL=C apt-get update -y && LC_ALL=C apt-get install -y locales less && \
     apt-get install -y zsh zsh-autosuggestions && \
     apt-get install -y sudo vim curl wget htop && \
     apt-get install -y git make zip jq && \
-    apt-get install -y python3 python3-pip python3-boto python3-jmespath && \
+    apt-get install -y python3 python3-pip python3-boto python3-jmespath python3-poetry && \
     apt-get autoremove -y && \
     apt-get clean && \
     git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git /oh-my-zsh && \
@@ -28,8 +28,8 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/*
 
 # https://hub.docker.com/_/docker/tags
-COPY --from=docker:24.0.6-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
-COPY --from=docker/buildx-bin:0.11.2 /buildx /usr/local/libexec/docker/cli-plugins/docker-buildx
+COPY --from=docker:24.0.7-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
+COPY --from=docker/buildx-bin:0.12.0 /buildx /usr/local/libexec/docker/cli-plugins/docker-buildx
 
 COPY ["etc/","/etc/"]
 
@@ -44,16 +44,18 @@ WORKDIR /www
 #
 FROM base AS kube
 
-COPY --from=bitnami/kubectl:1.27.5 /opt/bitnami/kubectl/bin/kubectl /usr/local/bin/kubectl
-COPY --from=alpine/helm:3.13.0 /usr/bin/helm /usr/bin/helm
-COPY --from=ghcr.io/getsops/sops:v3.8.0-alpine /usr/local/bin/sops /usr/bin/sops
-COPY --from=ghcr.io/sergelogvinov/vals:0.28.0  /usr/bin/vals /usr/bin/vals
+COPY --from=bitnami/kubectl:1.27.8 /opt/bitnami/kubectl/bin/kubectl /usr/local/bin/kubectl
+COPY --from=alpine/helm:3.13.2 /usr/bin/helm /usr/bin/helm
+COPY --from=ghcr.io/getsops/sops:v3.8.1-alpine /usr/local/bin/sops /usr/bin/sops
+COPY --from=ghcr.io/sergelogvinov/vals:0.28.0 /usr/bin/vals /usr/bin/vals
+COPY --from=ghcr.io/yannh/kubeconform:v0.6.4 /kubeconform /usr/bin/kubeconform
+COPY --from=minio/mc:RELEASE.2023-10-30T18-43-32Z /usr/bin/mc /usr/bin/mc
 
 COPY --from=hashicorp/terraform:1.5.7         /bin/terraform       /bin/terraform
 COPY --from=wagoodman/dive:v0.11.0            /usr/local/bin/dive  /usr/local/bin/dive
 COPY --from=ghcr.io/sergelogvinov/skopeo:1.13 /usr/bin/skopeo /usr/bin/skopeo
 COPY --from=ghcr.io/sergelogvinov/skopeo:1.13 /etc/containers/ /etc/containers/
-COPY --from=ghcr.io/aquasecurity/trivy:0.45.1 /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=ghcr.io/aquasecurity/trivy:0.47.0 /usr/local/bin/trivy /usr/local/bin/trivy
 
 ENV HELM_DATA_HOME=/usr/local/share/helm
 RUN helm plugin install https://github.com/jkroepke/helm-secrets --version v4.5.1
