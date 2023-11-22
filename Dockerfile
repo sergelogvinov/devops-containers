@@ -105,13 +105,13 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update -y && apt-get install -y python3 python3-venv python3-dev python3-pip && \
-    pip3 install pipenv && \
-    pip3 install --ignore-installed psycopg2-binary && \
+RUN apt-get update -y && apt-get install -y python3 python3-full python3-psycopg2 && \
     apt-get install -y gcc libxml2-dev libxslt1-dev libpq-dev && \
     apt-get install -y python3-redis python3-requests python3-dateutil python3-ipython && \
     apt-get install -y python3-cffi libcairo2 libpango-1.0-0 libpangocairo-1.0-0 \
         libgdk-pixbuf2.0-0 libffi-dev shared-mime-info musl-dev && \
+    apt-get install -y --no-install-recommends postgresql-client poppler-utils python3-gdal xmlsec1 ghostscript  \
+      build-essential libpoppler-cpp-dev pkg-config && \
     rm -rf /root/.cache && \
     apt-get autoremove -y && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
