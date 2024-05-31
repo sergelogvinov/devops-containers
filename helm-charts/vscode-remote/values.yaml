@@ -101,7 +101,7 @@ docker:
   image:
     repository: docker
     pullPolicy: IfNotPresent
-    tag: 23.0-dind
+    tag: 25.0-dind
 
   resources:
     limits:
