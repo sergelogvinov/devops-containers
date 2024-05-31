@@ -91,7 +91,6 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
         {{- if .Values.docker.enabled }}
         - name: {{ .Chart.Name }}-docker
-          minReadySeconds: 5
           securityContext:
             privileged: true
             seccompProfile:
