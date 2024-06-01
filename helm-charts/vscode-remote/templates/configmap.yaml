@@ -18,6 +18,9 @@ data:
         }
       },
       "hosts": ["unix:///var/run/docker.sock","tcp://127.0.0.1:2376"],
+      "default-address-pools": [
+        {"base": "198.18.9.0/16","size": 24}
+      ],
       "mtu": 1280,
       "log-level": "warn"
     }

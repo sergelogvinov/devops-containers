@@ -1,13 +1,18 @@
 #
 
-THIS_FILE:=$(lastword $(MAKEFILE_LIST))
-BUILD_VCS_BRANCH?=$(shell git branch 2>/dev/null | sed -n '/^\*/s/^\* //p' | sed 's/\//-/g' | sed 's/^(HEAD detached at \(.*\))$$/\1/g')
-BUILD_VCS_NUMBER?=$(shell git rev-parse --short=7 HEAD)
-CODE_TAG?=$(shell git describe --exact-match --tags 2>/dev/null || git branch 2>/dev/null | sed -n '/^\*/s/^\* //p' | sed 's/\//-/g' | sed 's/^(HEAD detached at \(.*\))$$/\1-$(BUILD_VCS_NUMBER)/g')
+TAG ?= $(shell git rev-parse --short=7 HEAD)
+BRANCH ?= $(shell git branch 2>/dev/null | sed -n '/^\*/s/^\* //p' | sed 's/^(HEAD detached at \(.*\))$$/\1/g')
+BRANCH := $(shell echo $(BRANCH) | sed 's/\//-/g' | sed 's/\#//g')
 
 REGISTRY?=ghcr.io/sergelogvinov/devops-containers
-DOCKER_HOST?=
 BUILDARG?=
+
+ifneq ($(PLATFORM),)
+BUILDARG += --platform=$(PLATFORM)
+endif
+ifeq ($(PUSH),true)
+BUILDARG += --push=$(PUSH)
+endif
 
 #
 
@@ -16,18 +21,15 @@ help:
 
 
 build: ## Build base images
-	docker build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:base-$(CODE_TAG) \
+	docker buildx build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:base-$(BRANCH) \
 		-f Dockerfile --target=base .
-	docker build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:kube-$(CODE_TAG) \
+	docker buildx build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:kube-$(BRANCH) \
 		-f Dockerfile --target=kube .
+	docker buildx build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:aws-$(BRANCH) \
+		-f Dockerfile --target=aws .
 
 build-dev: ## Build develop environment
-	docker build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:dev-$(CODE_TAG) \
+	docker buildx build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:dev-$(BRANCH) \
 		-f Dockerfile --target=dev .
-	docker build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:pytest-$(CODE_TAG) \
+	docker buildx build $(BUILDARG) --rm -t $(REGISTRY)/devops-containers:pytest-$(BRANCH) \
 		-f Dockerfile --target=pytest .
-
-push:
-	docker push $(REGISTRY)/devops-containers:kube-$(CODE_TAG)
-	docker push $(REGISTRY)/devops-containers:dev-$(CODE_TAG)
-	docker push $(REGISTRY)/devops-containers:pytest-$(CODE_TAG)
