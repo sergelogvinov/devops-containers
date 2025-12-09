@@ -1,6 +1,6 @@
 #
 
-FROM golang:1.22.3-bookworm AS base
+FROM golang:1.25.5-bookworm AS base
 LABEL org.opencontainers.image.source https://github.com/sergelogvinov/devops-containers
 
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=C.UTF-8
@@ -28,8 +28,8 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/*
 
 # https://hub.docker.com/_/docker/tags
-COPY --from=docker:25.0.5-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
-COPY --from=docker/buildx-bin:0.13.1 /buildx /usr/local/libexec/docker/cli-plugins/docker-buildx
+COPY --from=docker:29.0.4-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
+COPY --from=docker/buildx-bin:0.15.0 /buildx /usr/local/lib/docker/cli-plugins/docker-buildx
 
 COPY ["etc/","/etc/"]
 
@@ -44,22 +44,26 @@ WORKDIR /www
 #
 FROM base AS kube
 
-COPY --from=bitnami/kubectl:1.28.9 /opt/bitnami/kubectl/bin/kubectl /usr/local/bin/kubectl
-COPY --from=alpine/helm:3.13.3 /usr/bin/helm /usr/bin/helm
-COPY --from=ghcr.io/getsops/sops:v3.8.1-alpine /usr/local/bin/sops /usr/bin/sops
-COPY --from=ghcr.io/sergelogvinov/vals:0.36.0 /usr/bin/vals /usr/bin/vals
-COPY --from=ghcr.io/yannh/kubeconform:v0.6.4 /kubeconform /usr/bin/kubeconform
-COPY --from=minio/mc:RELEASE.2024-01-16T16-06-34Z /usr/bin/mc /usr/bin/mc
+COPY --from=ghcr.io/sergelogvinov/skopeo /usr/bin/skopeo /usr/bin/skopeo
+COPY --from=ghcr.io/sergelogvinov/skopeo /etc/containers/ /etc/containers/
+COPY --from=ghcr.io/aquasecurity/trivy:0.68.1 /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=ghcr.io/sergelogvinov/reviewdog:0.21.0 /usr/bin/reviewdog /usr/bin/reviewdog
+COPY --from=ghcr.io/sergelogvinov/git-chglog:0.15.4 /usr/local/bin/git-chglog /usr/bin/git-chglog
+
+COPY --from=rancher/kubectl:v1.34.2 /bin/kubectl /usr/local/bin/kubectl
+COPY --from=alpine/helm:3.19.0 /usr/bin/helm /usr/bin/helm
+COPY --from=ghcr.io/helmfile/helmfile:v1.2.2 /usr/local/bin/helmfile /usr/bin/helmfile
+COPY --from=ghcr.io/getsops/sops:v3.11.0-alpine /usr/local/bin/sops /usr/bin/sops
+COPY --from=ghcr.io/sergelogvinov/vals:0.42.5 /usr/bin/vals /usr/bin/vals
+COPY --from=ghcr.io/yannh/kubeconform:v0.7.0 /kubeconform /usr/bin/kubeconform
+COPY --from=mikefarah/yq:4.49.2 /usr/bin/yq /usr/bin/yq
 
 COPY --from=hashicorp/terraform:1.5.7         /bin/terraform       /bin/terraform
-COPY --from=wagoodman/dive:v0.11.0            /usr/local/bin/dive  /usr/local/bin/dive
-
-COPY --from=ghcr.io/sergelogvinov/skopeo:1.14 /usr/bin/skopeo /usr/bin/skopeo
-COPY --from=ghcr.io/sergelogvinov/skopeo:1.14 /etc/containers/ /etc/containers/
-COPY --from=ghcr.io/aquasecurity/trivy:0.51.4 /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=wagoodman/dive:v0.13.1            /usr/local/bin/dive  /usr/local/bin/dive
 
 ENV HELM_DATA_HOME=/usr/local/share/helm
-RUN helm plugin install https://github.com/jkroepke/helm-secrets --version v4.5.1
+RUN helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.5 && \
+    helm plugin install https://github.com/databus23/helm-diff --version v3.14.1
 
 USER vscode
 RUN git config --global pull.rebase false
