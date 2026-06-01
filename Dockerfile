@@ -63,8 +63,7 @@ COPY --from=wagoodman/dive:v0.13.1            /usr/local/bin/dive  /usr/local/bi
 
 ENV HELM_DATA_HOME=/usr/local/share/helm
 RUN helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.11 && \
-    helm plugin install https://github.com/databus23/helm-diff --version v3.13.2 && \
-    helm repo update
+    helm plugin install https://github.com/databus23/helm-diff --version v3.13.2
 
 USER vscode
 RUN git config --global pull.rebase false
