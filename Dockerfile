@@ -28,9 +28,8 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/*
 
 # https://hub.docker.com/_/docker/tags
-COPY --from=docker:29.0.4-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
+COPY --from=docker:29.4.3-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
 COPY --from=docker/buildx-bin:0.15.0 /buildx /usr/local/lib/docker/cli-plugins/docker-buildx
-
 COPY ["etc/","/etc/"]
 
 RUN adduser --disabled-password --home /home/vscode --shell=/usr/bin/zsh --uid 1100 --gecos "VS Code" vscode && \
@@ -46,24 +45,26 @@ FROM base AS kube
 
 COPY --from=ghcr.io/sergelogvinov/skopeo /usr/bin/skopeo /usr/bin/skopeo
 COPY --from=ghcr.io/sergelogvinov/skopeo /etc/containers/ /etc/containers/
-COPY --from=ghcr.io/aquasecurity/trivy:0.68.1 /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=ghcr.io/aquasecurity/trivy:0.70.0 /usr/local/bin/trivy /usr/local/bin/trivy
 COPY --from=ghcr.io/sergelogvinov/reviewdog:0.21.0 /usr/bin/reviewdog /usr/bin/reviewdog
 COPY --from=ghcr.io/sergelogvinov/git-chglog:0.15.4 /usr/local/bin/git-chglog /usr/bin/git-chglog
 
-COPY --from=rancher/kubectl:v1.34.2 /bin/kubectl /usr/local/bin/kubectl
-COPY --from=alpine/helm:3.19.0 /usr/bin/helm /usr/bin/helm
-COPY --from=ghcr.io/helmfile/helmfile:v1.2.2 /usr/local/bin/helmfile /usr/bin/helmfile
-COPY --from=ghcr.io/getsops/sops:v3.11.0-alpine /usr/local/bin/sops /usr/bin/sops
-COPY --from=ghcr.io/sergelogvinov/vals:0.42.5 /usr/bin/vals /usr/bin/vals
+COPY --from=rancher/kubectl:v1.34.3 /bin/kubectl /usr/local/bin/kubectl
+COPY --from=alpine/helm:3.21.0 /usr/bin/helm /usr/bin/helm
+COPY --from=ghcr.io/helmfile/helmfile:v1.5.2 /usr/local/bin/helmfile /usr/bin/helmfile
+COPY --from=ghcr.io/getsops/sops:v3.13.1-alpine /usr/local/bin/sops /usr/bin/sops
+COPY --from=ghcr.io/sergelogvinov/vals:0.44.0 /usr/bin/vals /usr/bin/vals
 COPY --from=ghcr.io/yannh/kubeconform:v0.7.0 /kubeconform /usr/bin/kubeconform
-COPY --from=mikefarah/yq:4.49.2 /usr/bin/yq /usr/bin/yq
+COPY --from=minio/mc:RELEASE.2025-04-08T15-39-49Z /usr/bin/mc /usr/bin/mc
+COPY --from=mikefarah/yq:4.53.2 /usr/bin/yq /usr/bin/yq
 
 COPY --from=hashicorp/terraform:1.5.7         /bin/terraform       /bin/terraform
 COPY --from=wagoodman/dive:v0.13.1            /usr/local/bin/dive  /usr/local/bin/dive
 
 ENV HELM_DATA_HOME=/usr/local/share/helm
-RUN helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.5 && \
-    helm plugin install https://github.com/databus23/helm-diff --version v3.14.1
+RUN helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.11 && \
+    helm plugin install https://github.com/databus23/helm-diff --version v3.13.2 && \
+    helm repo update
 
 USER vscode
 RUN git config --global pull.rebase false
