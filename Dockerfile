@@ -1,6 +1,6 @@
 #
 
-FROM golang:1.26.3-bookworm AS base
+FROM golang:1.26.5-bookworm AS base
 LABEL org.opencontainers.image.source https://github.com/sergelogvinov/devops-containers
 
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm-color LC_ALL=C.UTF-8
